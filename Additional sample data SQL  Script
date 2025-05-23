@@ -1,3 +1,4 @@
+-- SCHEMA: Table creation
 CREATE TABLE BOOK (
 	Book_ID SERIAL PRIMARY KEY,
 	Title VARCHAR(100) NOT NULL,
@@ -7,7 +8,6 @@ CREATE TABLE BOOK (
 	TotalCopies INT CHECK (TotalCopies >= 0),
 	PublicationYear INT
 );
-
 
 CREATE TABLE STUDENT (
 	StudentID SERIAL PRIMARY KEY,
@@ -20,15 +20,13 @@ CREATE TABLE STUDENT (
 	MembershipDate DATE NOT NULL DEFAULT CURRENT_DATE                                              
 );
 
-
 CREATE TABLE LIBRARIAN (
 	LibrarianID SERIAL PRIMARY KEY,
-	EmployeeID VARCHAR(20) UNIQUE NOT NULL, 
+	EmployeeID VARCHAR(50) UNIQUE NOT NULL,
 	FirstName VARCHAR(50) NOT NULL,
 	LastName VARCHAR(50) NOT NULL,
 	Email VARCHAR(100) UNIQUE
 );
-
 
 CREATE TABLE LOAN (
 	LoanID SERIAL PRIMARY KEY,
@@ -40,44 +38,81 @@ CREATE TABLE LOAN (
 	ReturnDate DATE,
 	FineAmount DECIMAL(10, 2) DEFAULT 0.00
 );
+
+-- INSERT DATA
+
+-- Books
 INSERT INTO BOOK (Title, Author, ISBN, Genre, TotalCopies, PublicationYear) VALUES
-('YeAddis Ababa Lelimat', 'Haddis Alemayehu', '9789994400110', 'Fiction', 5, 1970),
-('Fikir Eske Mekabir', 'Haddis Alemayehu', '9789994400127', 'Romance', 3, 1965),
-('YeKerma Mewded', 'Bealu Girma', '9789994400134', 'Historical', 2, 1980),
-('YeBurka Zimita', 'Sisay Nigusu', '9789994400141', 'Drama', 4, 2005),
-('YeAlamaz Dirgit', 'Mekonnen Woldesemayat', '9789994400158', 'Biography', 1, 2010),
-('Out of Stock Book', 'Daniel Kibret', '9789994400165', 'Inspirational', 0, 2022); -- TotalCopies = 0
+('Echoes of the Nile', 'Amanuel Getachew', '9789994400172', 'Historical', 2, 1999),
+('Code of the Ancients', 'Marta Girma', '9789994400173', 'Science Fiction', 1, 2021),
+('Whispers in Addis', 'Biruk Tekle', '9789994400174', 'Drama', 0, 2018),
+('Digital Abyss', 'Selam Fikadu', '9789994400175', 'Technology', 5, 2023),
+('Roots and Routes', 'Lemlem Ayele', '9789994400176', 'Biography', 4, 2011);
+
+-- Students
 INSERT INTO STUDENT (FirstName, LastName, Email, PhoneNumber, Major, DormNumber, MembershipDate) VALUES
-('Mikias', 'Kebede', 'mikias.k@aastu.edu.et', '0911123456', 'Computer Science', 'Dorm B17', '2023-09-01'),
-('Selamawit', 'Tesfaye', 'selam.t@aastu.edu.et', '0922112233', 'Food and Nutrition', 'Dorm B2', '2024-01-15'),
-('Natnael', 'Gebremichael', 'natnael.g@aastu.edu.et', '0933445566', 'Engineering', 'Dorm B7', '2023-11-20'),
-('Eyerusalem', 'Assefa', 'eyerusalem.a@aastu.edu.et', '0944556677','Biotechnology', 'Dorm B4', '2020-05-10');
+('Rediet', 'Tadesse', 'rediet.t@aastu.edu.et', '0911556677', 'Data Science', 'Dorm C1', '2022-08-21'),
+('Kalkidan', 'Mengistu', 'kalkidan.m@aastu.edu.et', '0922998899', 'Architecture', 'Dorm C3', '2023-02-12'),
+('Samuel', 'Abate', 'samuel.a@aastu.edu.et', '0933997788', 'AI Engineering', 'Dorm C5', '2024-06-01');
+
+-- Librarians
 INSERT INTO LIBRARIAN (EmployeeID, FirstName, LastName, Email) VALUES
-('LIB-101', 'Tigist', 'Mulugeta', 'tigist.m@lib.edu.et'),
-('LIB-102', 'Dawit', 'Kassa', 'dawit.k@lib.edu.et'),
-('LIB-103', 'Meron', 'Abebe', 'meron.a@lib.edu.et'),
-('ADMIN-001', 'Ephrem', 'Tekle', 'ephrem.t@lib.edu.et');
+('LIB-104', 'Alemayehu', 'Zeleke', 'alemayehu.z@lib.edu.et'),
+('LIB-105', 'Meskerem', 'Hailu', 'meskerem.h@lib.edu.et');
 
-INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
-VALUES (1, 4, 1, '2024-12-20', '2025-01-05', NULL);
+-- Loans
+INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate) VALUES
+(1, 1, 5, '2025-04-01', '2025-04-15', NULL), -- Overdue
+(4, 3, 4, CURRENT_DATE, CURRENT_DATE + INTERVAL '14 days', NULL), -- Active
+(2, 2, 5, '2025-03-01', '2025-03-15', '2025-03-14'); -- Returned
+1. Books that are out of stock
+SELECT Title, Author FROM BOOK WHERE TotalCopies = 0;
 
+-- 2. Students who borrowed books and haven't returned them yet
+SELECT s.FirstName, s.LastName, b.Title, l.LoanDate, l.DueDate
+FROM LOAN l
+JOIN STUDENT s ON l.StudentID = s.StudentID
+JOIN BOOK b ON l.Book_ID = b.Book_ID
+WHERE l.ReturnDate IS NULL;
 
-INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
-VALUES (2, 2, 2, '2024-03-15', '2024-03-29', '2024-03-28');
+-- 3. Count how many books each librarian has processed
+SELECT l.LibrarianID, lb.FirstName, lb.LastName, COUNT(*) AS LoanCount
+FROM LOAN l
+JOIN LIBRARIAN lb ON l.LibrarianID = lb.LibrarianID
+GROUP BY l.LibrarianID, lb.FirstName, lb.LastName;
 
+-- 4. Oldest and most recent books
+SELECT Title, Author, PublicationYear FROM BOOK ORDER BY PublicationYear ASC LIMIT 1;  -- Oldest
+SELECT Title, Author, PublicationYear FROM BOOK ORDER BY PublicationYear DESC LIMIT 1; -- Newest
 
-INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
-VALUES (3, 3, 1, CURRENT_DATE, CURRENT_DATE + INTERVAL '14 days', NULL);
+-- 5. Books in the Drama genre
+SELECT Title, Author FROM BOOK WHERE Genre = 'Drama';
 
+-- 6. Students who registered before 2023 and still have active loans
+SELECT s.FirstName, s.LastName, s.MembershipDate, b.Title, l.LoanDate
+FROM LOAN l
+JOIN STUDENT s ON l.StudentID = s.StudentID
+JOIN BOOK b ON l.Book_ID = b.Book_ID
+WHERE s.MembershipDate < '2023-01-01' AND l.ReturnDate IS NULL;
 
-INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
-VALUES (4, 1, 3, '2024-02-10', '2024-02-24', '2024-02-23');
+-- 7. Top 5 most borrowed books
+SELECT b.Title, COUNT(l.Book_ID) AS LoanFrequency
+FROM LOAN l
+JOIN BOOK b ON l.Book_ID = b.Book_ID
+GROUP BY b.Title
+ORDER BY LoanFrequency DESC
+LIMIT 5;
 
+-- 8. Librarians handling overdue books
+SELECT DISTINCT lb.FirstName, lb.LastName, lb.Email
+FROM LOAN l
+JOIN LIBRARIAN lb ON l.LibrarianID = lb.LibrarianID
+WHERE l.DueDate < CURRENT_DATE AND l.ReturnDate IS NULL;
 
-INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
-VALUES (6, 1, 2, '2025-01-05', '2025-01-19', NULL);
-
-
-INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
-VALUES (5, 2, 4, '2024-04-10', '2024-04-24', '2024-04-22');
-
+-- 9. Loans handled by the administrator (if any)
+SELECT s.FirstName, s.LastName, b.Title, l.LoanDate, l.DueDate
+FROM LOAN l
+JOIN STUDENT s ON l.StudentID = s.StudentID
+JOIN BOOK b ON l.Book_ID = b.Book_ID
+JOIN LIBRARIAN lb ON l.LibrarianID = lb.LibrarianID
+WHERE lb.EmployeeID = 'ADMIN-001';
