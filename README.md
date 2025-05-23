@@ -13,7 +13,7 @@ This project is a database system for managing a university library. It includes
 
 ---
 
-## ✅ Features
+##  Features
 
 - Track books, including out-of-stock items
 - Monitor student memberships and loan history
