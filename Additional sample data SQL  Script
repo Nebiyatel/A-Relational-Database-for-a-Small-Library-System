@@ -1,0 +1,83 @@
+CREATE TABLE BOOK (
+	Book_ID SERIAL PRIMARY KEY,
+	Title VARCHAR(100) NOT NULL,
+	Author VARCHAR(50) NOT NULL,
+	ISBN VARCHAR(20) UNIQUE,
+	Genre VARCHAR(30),
+	TotalCopies INT CHECK (TotalCopies >= 0),
+	PublicationYear INT
+);
+
+
+CREATE TABLE STUDENT (
+	StudentID SERIAL PRIMARY KEY,
+	FirstName VARCHAR(50) NOT NULL,
+	LastName VARCHAR(50) NOT NULL,
+	Email VARCHAR(100) UNIQUE,
+	PhoneNumber VARCHAR(15),
+	Major VARCHAR(50),
+	DormNumber VARCHAR(10),
+	MembershipDate DATE NOT NULL DEFAULT CURRENT_DATE                                              
+);
+
+
+CREATE TABLE LIBRARIAN (
+	LibrarianID SERIAL PRIMARY KEY,
+	EmployeeID VARCHAR(20) UNIQUE NOT NULL, 
+	FirstName VARCHAR(50) NOT NULL,
+	LastName VARCHAR(50) NOT NULL,
+	Email VARCHAR(100) UNIQUE
+);
+
+
+CREATE TABLE LOAN (
+	LoanID SERIAL PRIMARY KEY,
+	Book_ID INT REFERENCES BOOK(Book_ID) ON DELETE CASCADE,
+	StudentID INT REFERENCES STUDENT(StudentID) ON DELETE CASCADE,
+	LibrarianID INT REFERENCES LIBRARIAN(LibrarianID) ON DELETE SET NULL,
+	LoanDate DATE NOT NULL DEFAULT CURRENT_DATE,
+	DueDate DATE NOT NULL CHECK (DueDate > LoanDate),
+	ReturnDate DATE,
+	FineAmount DECIMAL(10, 2) DEFAULT 0.00
+);
+INSERT INTO BOOK (Title, Author, ISBN, Genre, TotalCopies, PublicationYear) VALUES
+('YeAddis Ababa Lelimat', 'Haddis Alemayehu', '9789994400110', 'Fiction', 5, 1970),
+('Fikir Eske Mekabir', 'Haddis Alemayehu', '9789994400127', 'Romance', 3, 1965),
+('YeKerma Mewded', 'Bealu Girma', '9789994400134', 'Historical', 2, 1980),
+('YeBurka Zimita', 'Sisay Nigusu', '9789994400141', 'Drama', 4, 2005),
+('YeAlamaz Dirgit', 'Mekonnen Woldesemayat', '9789994400158', 'Biography', 1, 2010),
+('Out of Stock Book', 'Daniel Kibret', '9789994400165', 'Inspirational', 0, 2022); -- TotalCopies = 0
+INSERT INTO STUDENT (FirstName, LastName, Email, PhoneNumber, Major, DormNumber, MembershipDate) VALUES
+('Mikias', 'Kebede', 'mikias.k@aastu.edu.et', '0911123456', 'Computer Science', 'Dorm B17', '2023-09-01'),
+('Selamawit', 'Tesfaye', 'selam.t@aastu.edu.et', '0922112233', 'Food and Nutrition', 'Dorm B2', '2024-01-15'),
+('Natnael', 'Gebremichael', 'natnael.g@aastu.edu.et', '0933445566', 'Engineering', 'Dorm B7', '2023-11-20'),
+('Eyerusalem', 'Assefa', 'eyerusalem.a@aastu.edu.et', '0944556677','Biotechnology', 'Dorm B4', '2020-05-10');
+INSERT INTO LIBRARIAN (EmployeeID, FirstName, LastName, Email) VALUES
+('LIB-101', 'Tigist', 'Mulugeta', 'tigist.m@lib.edu.et'),
+('LIB-102', 'Dawit', 'Kassa', 'dawit.k@lib.edu.et'),
+('LIB-103', 'Meron', 'Abebe', 'meron.a@lib.edu.et'),
+('ADMIN-001', 'Ephrem', 'Tekle', 'ephrem.t@lib.edu.et');
+
+INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
+VALUES (1, 4, 1, '2024-12-20', '2025-01-05', NULL);
+
+
+INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
+VALUES (2, 2, 2, '2024-03-15', '2024-03-29', '2024-03-28');
+
+
+INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
+VALUES (3, 3, 1, CURRENT_DATE, CURRENT_DATE + INTERVAL '14 days', NULL);
+
+
+INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
+VALUES (4, 1, 3, '2024-02-10', '2024-02-24', '2024-02-23');
+
+
+INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
+VALUES (6, 1, 2, '2025-01-05', '2025-01-19', NULL);
+
+
+INSERT INTO LOAN (Book_ID, StudentID, LibrarianID, LoanDate, DueDate, ReturnDate)
+VALUES (5, 2, 4, '2024-04-10', '2024-04-24', '2024-04-22');
+
